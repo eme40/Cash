@@ -14,7 +14,6 @@ import java.util.List;
 @Setter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
 @Entity
 @Table(name = "wallet")
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
@@ -48,8 +47,7 @@ public class Wallet extends BaseClass {
         }
     }
 
-    public Wallet(UserEntity userEntity) {
-        this.user = userEntity;
+    public Wallet() {
         this.virtual_AccountNumber = AccountNumberGenerator.generateAccountNumber();
     }
 }

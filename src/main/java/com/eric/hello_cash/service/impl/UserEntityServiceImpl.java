@@ -5,12 +5,12 @@ import com.eric.hello_cash.dto.RegistrationRequest;
 import com.eric.hello_cash.dto.RegistrationResponse;
 import com.eric.hello_cash.entities.Wallet;
 import com.eric.hello_cash.entities.UserEntity;
-import com.eric.hello_cash.repository.AccountRepo;
+import com.eric.hello_cash.enums.Role;
+import com.eric.hello_cash.repository.WalletRepository;
 import com.eric.hello_cash.repository.UserEntityRepo;
 import com.eric.hello_cash.service.UserEntityService;
 
 import com.eric.hello_cash.utils.AccountNumberGenerator;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,42 +24,48 @@ import java.math.BigDecimal;
 public class UserEntityServiceImpl implements UserEntityService {
 
     private UserEntityRepo userEntityRepo;
-    private AccountRepo accountRepo;
+    private WalletRepository walletRepository;
 
     @Autowired
-    public UserEntityServiceImpl(UserEntityRepo userEntityRepo, AccountRepo accountRepo) {
+    public UserEntityServiceImpl(UserEntityRepo userEntityRepo, WalletRepository walletRepository) {
         this.userEntityRepo = userEntityRepo;
-        this.accountRepo = accountRepo;
+        this.walletRepository = walletRepository;
     }
 
     @Override
-    public RegistrationResponse createUser(RegistrationRequest request) {
-        log.info("Creating user with request: {}", request);
+    public RegistrationResponse registerUser(RegistrationRequest request) {
+        // Create new UserEntity
         UserEntity newUser = UserEntity.builder()
-                .lastName(request.getLastName())
                 .firstName(request.getFirstName())
                 .otherName(request.getOtherName())
-                .phoneNumber(request.getPhoneNumber())// Ensure accounts list is initialized
+                .lastName(request.getLastName())
+                .phoneNumber(request.getPhoneNumber())
+                .role(Role.USER) // or other logic to determine the role
                 .build();
-        UserEntity savedUser = userEntityRepo.save(newUser);
-        log.info("New user created: {}", newUser);
-        // Create a new account associated with the user
-        Wallet account = Wallet.builder()
-                .accountName(newUser.getFullName())
-                .virtual_AccountNumber(AccountNumberGenerator.generateAccountNumber())
-                .accountType(request.getAccountType())
-                .balance(BigDecimal.ZERO) // Initial balance can be set here
-                .enabled(true) // Enabled by default
+
+        // Save the user to generate the user ID
+        newUser = userEntityRepo.save(newUser);
+
+        // Generate account number
+        String accountNumber = AccountNumberGenerator.generateAccountNumber();
+
+        // Create Wallet for the new user
+        Wallet newWallet = Wallet.builder()
+                .virtual_AccountNumber(accountNumber)
                 .user(newUser)
+                .accountType(request.getAccountType())
+                .balance(BigDecimal.ZERO)
+                .enabled(true)
                 .build();
-        log.info("New account created: {}", account);
-        // Add the account to the user
-        log.info("Account added to user: {}", newUser.getAccounts());
-        Wallet SavedWallet = accountRepo.save(account);
-        log.info("User saved: {}", savedUser);
+
+        // Save the wallet
+        walletRepository.save(newWallet);
+
+
         return RegistrationResponse.builder()
-                .firstName(savedUser.getFirstName())
-                .accountNumber(SavedWallet.getVirtual_AccountNumber())
+                .accountNumber(accountNumber)
+                .firstName(newUser.getFirstName())
                 .build();
     }
 }
+
