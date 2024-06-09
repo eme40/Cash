@@ -1,56 +1,31 @@
 package com.eric.hello_cash.entities;
 
 
+import com.eric.hello_cash.enums.Role;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 
 import lombok.*;
 
-
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 @Setter
-
 @Builder
-
 @AllArgsConstructor
 @Entity
 @Table(name = "users")
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 
 
-public class UserEntity extends Audit{
+public class UserEntity extends BaseClass {
+
     private String firstName;
-    private String lastName;
     private String otherName;
-    private String email;
+    private String lastName;
+    @Column(unique = true)
     private String phoneNumber;
-    private String address;
-    private String password; // hashed and encrypted
-    private String dateOfBirth;
-    private String gender;
-    private String nationality;
-    private String BVN;
-    private String OTP;
-    private String image;
-    private Integer loginAttempt;
-
-
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Transaction> transactions;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Bill> bills;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Account> accounts;
-
-    public UserEntity() {
-        this.accounts = new ArrayList<>();
-    }
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Wallet accounts;
+    private Role role;
 
     public String getFullName() {
         StringBuilder fullName = new StringBuilder();

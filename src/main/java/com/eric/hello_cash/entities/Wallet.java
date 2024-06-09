@@ -16,33 +16,29 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "account")
+@Table(name = "wallet")
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-public class Account extends Audit{
+public class Wallet extends BaseClass {
 
     @NotBlank
     @Column(unique = true)
-    private String accountNumber;
-
+    private String virtual_AccountNumber;
     @NotBlank
     private String accountName;
-
     @NotNull
     @Enumerated(EnumType.STRING)
     private AccountType accountType;
-
     @NotNull
     private BigDecimal balance;
-
     private boolean enabled;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Transaction> transactions;
+
 
     @PrePersist
     @PreUpdate
@@ -52,4 +48,8 @@ public class Account extends Audit{
         }
     }
 
+    public Wallet(UserEntity userEntity) {
+        this.user = userEntity;
+        this.virtual_AccountNumber = AccountNumberGenerator.generateAccountNumber();
+    }
 }

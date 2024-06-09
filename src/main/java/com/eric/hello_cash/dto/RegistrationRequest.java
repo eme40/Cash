@@ -13,12 +13,5 @@ public class RegistrationRequest {
     private String lastName;
     private String otherName;
     private String phoneNumber;
-    private String email;
-    private String address;
-    private String password; // hashed and encrypted
-    private String dateOfBirth;
-    private String gender;
-    private String nationality;
-    private String BVN;
     private AccountType accountType;
 }
